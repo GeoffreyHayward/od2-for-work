@@ -9,7 +9,7 @@ jobs:
         id: jwt_token
         run: |
           response=$(curl -s \
-          -H "Accept: application/json" \
+          -H "Accept: application/json; charset=utf-8" \
           -X POST https://api.nhsdigital.bloomreach.cloud/v3/authn/access_token \
           -d '{ "username": "${{ env.USERNAME }}", "password": "${{ env.PASSWORD }}" }')
           token=$(echo $response | awk 'match($0, /access_token":"[^"]+"/) {print substr($0, RSTART+15)}' | cut -d '"' -f 1 )
@@ -23,6 +23,6 @@ jobs:
         run: |
           echo ${{ steps.jwt_token.outputs.token }}
           curl \
-          -H "Accept: application/json" \
-          -H "bearer ${{ steps.jwt_token.outputs.token }}" \
+          -H "Accept: application/json; charset=utf-8" \
+          -H "Authorization: bearer ${{ steps.jwt_token.outputs.token }}" \
           -X GET https://api.nhsdigital.bloomreach.cloud/v3/authn/verify_token
