@@ -12,7 +12,7 @@ jobs:
           -H "Accept: application/json" \
           -X POST https://api.nhsdigital.bloomreach.cloud/v3/authn/access_token \
           -d '{ "username": "${{ env.USERNAME }}", "password": "${{ env.PASSWORD }}" }')
-          echo "::set-output name=token::\${{fromJson(response).token_type}}
+          echo "::set-output name=token::${{fromJson($response).token_type}}
         env:
           API: ${{ secrets.MISSION_CONTROL_API_ADDRESS }}
           USERNAME: ${{ secrets.MISSION_CONTROL_API_USERNAME }}
