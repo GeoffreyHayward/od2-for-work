@@ -22,7 +22,7 @@ jobs:
 
       - name: Verfiy JWT Token
         run: |
-          response=$(curl -s \
+          curl \
           -H "Accept: application/json" \
           -H "bearer ${{ steps.jwt_token.outputs.token }}" \
           -X GET https://api.nhsdigital.bloomreach.cloud/v3/authn/verify_token
