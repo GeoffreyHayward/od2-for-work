@@ -8,7 +8,7 @@ jobs:
       - name: Obtaino JWT Token
         id: jwt_token
         run: |
-          response=$(curl -s \
+          response=$(curl -i \
           -H "Accept: application/json; charset=utf-8" \
           -X POST https://api.nhsdigital.bloomreach.cloud/v3/authn/access_token \
           -d '{ "username": "${{ env.USERNAME }}", "password": "${{ env.PASSWORD }}" }')
@@ -22,7 +22,7 @@ jobs:
       - name: Verify JWT Token
         run: |
           echo ${{ steps.jwt_token.outputs.token }}
-          curl \
+          curl -i \
           -H "Accept: application/json; charset=utf-8" \
           -H "Authorization: bearer ${{ steps.jwt_token.outputs.token }}" \
           -X GET https://api.nhsdigital.bloomreach.cloud/v3/authn/verify_token
