@@ -22,6 +22,8 @@ jobs:
 
       - name: Verfiy JWT Token
         run: |
+          echo ${{ steps.jwt_token.outputs.type }}
+          echo ${{ steps.jwt_token.outputs.refresh }}
           curl \
           -H "Accept: application/json" \
           -H "bearer ${{ steps.jwt_token.outputs.token }}" \
