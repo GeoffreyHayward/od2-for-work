@@ -1,0 +1,17 @@
+name: Upload and Deploy to OD2
+on: [push]
+
+jobs:
+  Upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtaino API JWT
+        run: |
+          curl \
+          -H "Accept: application/json" \
+          -X POST https://api.nhsdigital.bloomreach.cloud/v3/authn/access_token \
+          -d '{ "username": "${{ env.USERNAME }}", "password": "${{ env.PASSWORD }}" }'
+        env:
+          API: ${{ secrets.MISSION_CONTROL_API_ADDRESS }}
+          USERNAME: ${{ secrets.MISSION_CONTROL_API_USERNAME }}
+          PASSWORD: ${{ secrets.MISSION_CONTROL_API_PASSWORD }}
