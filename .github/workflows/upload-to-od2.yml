@@ -5,19 +5,24 @@ jobs:
   Upload:
     runs-on: ubuntu-latest
     steps:
-      - name: Obtaino API JWT
+      - name: Obtaino JWT Token
         id: jwt_token
         run: |
           response=$(curl -s \
           -H "Accept: application/json" \
           -X POST https://api.nhsdigital.bloomreach.cloud/v3/authn/access_token \
           -d '{ "username": "${{ env.USERNAME }}", "password": "${{ env.PASSWORD }}" }')
-          token=$(echo $response | awk 'match($0, /token_type":"[^"]+"/) {print substr($0, RSTART+13, RLENGTH-14)}')
-          echo "::set-output name=token::$token"
+          token=$(echo $response | awk 'match($0, /access_token":"[^"]+"/) {print substr($0, RSTART+15)}' | cut -d '"' -f 1 )
+          refresh=$(echo $response | awk 'match($0, /refresh_token":"[^"]+"/) {print substr($0, RSTART+15)}' | cut -d '"' -f 1 )
+          echo "::set-output name=type::$type name=token::$token name=refresh::$refresh"
         env:
           API: ${{ secrets.MISSION_CONTROL_API_ADDRESS }}
           USERNAME: ${{ secrets.MISSION_CONTROL_API_USERNAME }}
           PASSWORD: ${{ secrets.MISSION_CONTROL_API_PASSWORD }}
 
-      - name: Test Last step
-        run: echo ${{ steps.jwt_token.outputs.token }}
+      - name: Verfiy JWT Token
+        run: |
+          response=$(curl -s \
+          -H "Accept: application/json" \
+          -H "bearer ${{ steps.jwt_token.outputs.token }}" \
+          -X GET https://api.nhsdigital.bloomreach.cloud/v3/authn/verify_token
