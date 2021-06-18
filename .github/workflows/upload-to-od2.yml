@@ -48,7 +48,7 @@ jobs:
           code=$(curl -LI \
           -H "Accept: application/json; charset=utf-8" \
           -X DELETE https://api.nhsdigital.bloomreach.cloud/v3/authn/refresh_token \
-          -d '{ "grant_type": "refresh_token", "refresh_token": "${{ env.REFRESH }}" }')
+          -d '{ "grant_type": "refresh_token", "refresh_token": "${{ env.REFRESH }}" }' \
           -o /dev/null -w '%{http_code}\n' -s)
           echo "::set-output name=code::$code"
         env:
