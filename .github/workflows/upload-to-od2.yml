@@ -5,6 +5,10 @@ jobs:
   Upload:
     runs-on: ubuntu-latest
     steps:
+
+      # Set up steps.
+
+      # Get API access token and verify it.
       - name: Obtaino JWT Token
         id: jwt_token
         run: |
@@ -20,7 +24,6 @@ jobs:
           API: ${{ secrets.MISSION_CONTROL_API_ADDRESS }}
           USERNAME: ${{ secrets.MISSION_CONTROL_API_USERNAME }}
           PASSWORD: ${{ secrets.MISSION_CONTROL_API_PASSWORD }}
-
       - name: Verify JWT Token
         id: jwt_token_verify
         run: |
@@ -30,7 +33,6 @@ jobs:
           -X GET https://api.nhsdigital.bloomreach.cloud/v3/authn/verify_token \
           -o /dev/null -w '%{http_code}\n' -s)
           echo "::set-output name=code::$code"
-
       - name: Check Response Code from Verify JWT Token
         if: ${{ steps.jwt_token_verify.outputs.code != 200 }}
         uses: actions/github-script@v3
@@ -42,6 +44,12 @@ jobs:
           CODE: ${{ steps.jwt_token_verify.outputs.code }}
 
 
+      # Main steps
+      # todo: main steps upload build via API
+
+      # Clean-up steps below.
+
+      # Delete JWT refresh token
       - name: Request Deletion of JWT Refresh Access tokens
         id: jwt_token_invalidate
         run: |
@@ -53,7 +61,6 @@ jobs:
           echo "::set-output name=code::$code"
         env:
           REFRESH:  ${{ steps.jwt_token.outputs.refresh }}
-
       - name: Check Response Code from Deletion of JWT Refresh Access tokens
         if: ${{ steps.jwt_token_invalidate.outputs.code != 200 }}
         uses: actions/github-script@v3
