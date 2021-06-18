@@ -36,3 +36,5 @@ jobs:
         with:
           script: |
             core.setFailed('The JWT token failed verification!')
+        env:
+          CODE: ${{ steps.jwt_token_verify.outputs.code }}
