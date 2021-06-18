@@ -2,7 +2,18 @@ name: Upload and Deploy to OD2
 on: [push]
 
 jobs:
-  Upload:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      # todo checkout
+      # todo set up cache
+      # todo build
+      # todo upload build for next job
+
+  upload:
+    needs:
+      - build
     runs-on: ubuntu-latest
     steps:
 

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<project>
+  <projectNamespace>demo</projectNamespace>
+  <confirmParams>false</confirmParams>
+  <selectedProjectPackage>uk.nhs.digital</selectedProjectPackage>
+  <selectedBeansPackage>uk.nhs.digital.beans</selectedBeansPackage>
+  <selectedComponentsPackage>uk.nhs.digital.components</selectedComponentsPackage>
+  <selectedRestPackage>uk.nhs.digital.rest</selectedRestPackage>
+  <hstRoot>/hst:demo</hstRoot>
+  <webfileBundleName>site</webfileBundleName>
+  <setupDone>false</setupDone>
+  <useSamples>true</useSamples>
+  <extraTemplates>true</extraTemplates>
+</project>
