@@ -13,7 +13,9 @@ jobs:
           -X POST https://api.nhsdigital.bloomreach.cloud/v3/authn/access_token \
           -d '{ "username": "${{ env.USERNAME }}", "password": "${{ env.PASSWORD }}" }')
           token=$(echo $response | awk 'match($0, /access_token":"[^"]+"/) {print substr($0, RSTART+15)}' | cut -d '"' -f 1 )
+          refresh=$(echo $response | awk 'match($0, /refresh_token":"[^"]+"/) {print substr($0, RSTART+16)}' | cut -d '"' -f 1 )
           echo "::set-output name=token::$token"
+          echo "::set-output name=refresh::$refresh"
         env:
           API: ${{ secrets.MISSION_CONTROL_API_ADDRESS }}
           USERNAME: ${{ secrets.MISSION_CONTROL_API_USERNAME }}
@@ -24,7 +26,7 @@ jobs:
         run: |
           code=$(curl -LI \
           -H "Accept: application/json; charset=utf-8" \
-          -H "Authorization: bearer ${{ steps.jwt_token.outputs.token }}" \
+          -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
           -X GET https://api.nhsdigital.bloomreach.cloud/v3/authn/verify_token \
           -o /dev/null -w '%{http_code}\n' -s)
           echo "::set-output name=code::$code"
@@ -38,3 +40,26 @@ jobs:
         env:
           # 'CODE' is for debugging fails
           CODE: ${{ steps.jwt_token_verify.outputs.code }}
+
+
+      - name: Request Deletion of JWT Refresh Access tokens
+        id: jwt_token_invalidate
+        run: |
+          code=$(curl -LI \
+          -H "Accept: application/json; charset=utf-8" \
+          -X DELETE https://api.nhsdigital.bloomreach.cloud/v3/authn/refresh_token \
+          -d '{ "grant_type": "refresh_token", "refresh_token": "${{ env.REFRESH }}" }')
+          -o /dev/null -w '%{http_code}\n' -s)
+          echo "::set-output name=code::$code"
+        env:
+          REFRESH:  ${{ steps.jwt_token.outputs.refresh }}
+
+      - name: Check Response Code from Deletion of JWT Refresh Access tokens
+        if: ${{ steps.jwt_token_invalidate.outputs.code != 200 }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed('The JWT Deletion of JWT Refresh Access tokens failed!')
+        env:
+          # 'CODE' is for debugging fails
+          CODE: ${{ steps.jwt_token_invalidate.outputs.code }}
