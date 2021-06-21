@@ -47,29 +47,28 @@ jobs:
             ${{ runner.os }}-maven-nhs-digital-${{ env.YEAR }}-
             ${{ runner.os }}-maven-nhs-digital-
             ${{ runner.os }}-maven-nhs-
+
       # todo set node.js cache when adding main project
-
       # todo version bump (main project)
-
-    #
-    # Step 6
-    #
-    - name: Package Code
-      run: mvn -P dist
-      env:
-        HIPPO_MAVEN_PASSWORD: ${{ secrets.HIPPO_MAVEN_PASSWORD }}
-        HIPPO_MAVEN_USERNAME: ${{ secrets.HIPPO_MAVEN_USERNAME }}
+      #
+      # Step 6
+      #
+      - name: Package Code
+        run: mvn -P dist
+        env:
+          HIPPO_MAVEN_PASSWORD: ${{ secrets.HIPPO_MAVEN_PASSWORD }}
+          HIPPO_MAVEN_USERNAME: ${{ secrets.HIPPO_MAVEN_USERNAME }}
 
       # todo upload build for next job
-        #
-        # Step 6
-        # Store homepage distribution workflow artifacts
-        #
-    - name: Archive dist artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: build.tar.gz
-        path: target/*.tar.gz
+      #
+      # Step 6
+      # Store homepage distribution workflow artifacts
+      #
+      - name: Archive dist artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build.tar.gz
+          path: target/*.tar.gz
 
 
   upload:
