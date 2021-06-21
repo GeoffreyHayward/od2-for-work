@@ -54,7 +54,7 @@ jobs:
       # Step 6
       #
       - name: Package Code
-        run: mvn -P dist
+        run: mvn -P dist --global-settings ".mvn.settings.xml"
         env:
           HIPPO_MAVEN_PASSWORD: ${{ secrets.HIPPO_MAVEN_PASSWORD }}
           HIPPO_MAVEN_USERNAME: ${{ secrets.HIPPO_MAVEN_USERNAME }}
