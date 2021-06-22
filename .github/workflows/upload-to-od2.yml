@@ -3,6 +3,7 @@ on: [push]
 
 jobs:
   build:
+    name: Build Project
     runs-on: ubuntu-latest
     steps:
 
@@ -74,6 +75,7 @@ jobs:
 
 
   upload:
+    name: Upload Build to BR Cloud
     needs:
       - build
     runs-on: ubuntu-latest
@@ -123,14 +125,13 @@ jobs:
         uses: actions/download-artifact@v2
         id: down
 
-      - name: Upload Build to BR Cloud
-        run: |
-
-
 
       # working-directory: ${{steps.download.outputs.download-path}}
       - name: Upload Build to BR Cloud
         run: |
+          ls
+          cd build
+          ls
           filelist=($(build/ls))
           curl -i \
           -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
