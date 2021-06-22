@@ -131,14 +131,23 @@ jobs:
           file="dist_file=@build/${filelist[0]}"
           response=$(curl -i \
           -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
-          -X POST https://api.nhsdigital.bloomreach.cloud/v3/distributions?replace=true \
+          -X POST https://api.nhsdigital.bloomreach.cloud/v3/distributions \
           -F $file)
           id=$(echo $response | awk 'match($0, /id":"[^"]+"/) {print substr($0, RSTART+5)}' | cut -d '"' -f 1 )
           echo "::set-output name=id::$id"
         working-directory: ${{steps.download.outputs.download-path}}
 
-      - name: Upload Build to BR Cloud
-        run: echo ${{steps.distribution.outputs.id}}
+      - name: Request Deployment
+        run: |
+          curl -i \
+          -H "Accept: application/json; charset=utf-8" \
+          -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
+          -X POST https://api.nhsdigital.bloomreach.cloud/v3/environments/{environmentId}/deploy \
+          -d '{ "distributionId": "${{ env.DISTRIBUTION }}", "strategy" : "rollingupdate" }'
+        env:
+          DISTRIBUTION: ${{steps.distribution.outputs.id}}
+
+}
 
       # Clean-up steps below.
 
