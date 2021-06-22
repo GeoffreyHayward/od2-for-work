@@ -129,7 +129,7 @@ jobs:
       # working-directory: ${{steps.download.outputs.download-path}}
       - name: Upload Build to BR Cloud
         run: |
-          filelist=($(ls /build))
+          filelist=($(ls build/))
           dist="dist_file=@build/${filelist[0]}"
           curl -i \
           -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
