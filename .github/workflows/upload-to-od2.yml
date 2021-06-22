@@ -124,6 +124,13 @@ jobs:
         id: download
 
       # working-directory: ${{steps.download.outputs.download-path}}
+      - name: Upload Build to BR Cloud
+        run: |
+          curl -i \
+          -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
+          -X POST https://api.nhsdigital.bloomreach.cloud/v3/distributions \
+          -F 'dist_file=@${{steps.download.outputs.download-path}}/build.tar.gz'
+
 
       # Clean-up steps below.
 
