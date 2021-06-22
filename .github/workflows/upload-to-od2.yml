@@ -120,28 +120,31 @@ jobs:
 
 
       # Main steps
-      # todo: main steps upload build via API
       - name: Download version artifact
         uses: actions/download-artifact@v2
         id: down
 
-
-      # working-directory: ${{steps.download.outputs.download-path}}
       - name: Upload Build to BR Cloud
+        id: distribution
         run: |
           filelist=($(ls build/))
-          dist="dist_file=@build/${filelist[0]}"
-          curl -i \
+          file="dist_file=@build/${filelist[0]}"
+          response=$(curl -i \
           -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
-          -X POST https://api.nhsdigital.bloomreach.cloud/v3/distributions \
-          -F $dist
+          -X POST https://api.nhsdigital.bloomreach.cloud/v3/distributions?replace=true \
+          -F $file)
+          id=$(echo $response | awk 'match($0, /id":"[^"]+"/) {print substr($0, RSTART+5)}' | cut -d '"' -f 1 )
+          echo "::set-output name=id::$id"
         working-directory: ${{steps.download.outputs.download-path}}
 
+      - name: Upload Build to BR Cloud
+        run: echo ${{steps.distribution.outputs.id}}
 
       # Clean-up steps below.
 
       # Delete JWT refresh token
       - name: Request Deletion of JWT Refresh Access tokens
+        if: always()
         id: jwt_token_invalidate
         run: |
           code=$(curl -L \
