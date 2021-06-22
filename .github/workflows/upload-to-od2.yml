@@ -125,7 +125,7 @@ jobs:
       - name: Upload Build to BR Cloud
         run: |
           ls -a
-        working-directory: ${{steps.download.outputs.download-path}}
+        working-directory: ${{steps.download.outputs.download-path}}/artifact
 
       # working-directory: ${{steps.download.outputs.download-path}}
       - name: Upload Build to BR Cloud
