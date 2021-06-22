@@ -69,7 +69,6 @@ jobs:
       - name: Archive dist artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: build.tar.gz
           path: target/*.tar.gz
 
 
