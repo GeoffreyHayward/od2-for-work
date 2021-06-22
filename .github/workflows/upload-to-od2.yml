@@ -142,12 +142,11 @@ jobs:
           curl -i \
           -H "Accept: application/json; charset=utf-8" \
           -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
-          -X POST https://api.nhsdigital.bloomreach.cloud/v3/environments/{environmentId}/deploy \
+          -X POST https://api.nhsdigital.bloomreach.cloud/v3/environments/${{ env.ENVIRONMENTN }}/deploy \
           -d '{ "distributionId": "${{ env.DISTRIBUTION }}", "strategy" : "rollingupdate" }'
         env:
           DISTRIBUTION: ${{steps.distribution.outputs.id}}
-
-}
+          ENVIRONMENT: '246914a9-a6cd-4948-b811-e7f5591b7fac'
 
       # Clean-up steps below.
 
