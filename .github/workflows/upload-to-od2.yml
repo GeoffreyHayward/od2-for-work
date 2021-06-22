@@ -69,6 +69,7 @@ jobs:
       - name: Archive dist artifacts
         uses: actions/upload-artifact@v2
         with:
+          name: build
           path: target/*.tar.gz
 
 
@@ -125,8 +126,10 @@ jobs:
       - name: Upload Build to BR Cloud
         run: |
           ls -a
-          cd artifact/
+          cd build/
           ls -a
+          filelist=($(ls))
+          echo ${filelist[0]}
         working-directory: ${{steps.download.outputs.download-path}}
 
       # working-directory: ${{steps.download.outputs.download-path}}
