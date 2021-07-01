@@ -209,7 +209,9 @@ jobs:
           data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "Cannot find the target server. Are you running the command from the correct channel?",  "color": "#DA291C" }] }'
 
       - name: Print Identify target for debugging
-        run: echo ${{steps.find-target.outputs.result}}
+        run: |
+          echo ${{fromJson(steps.find-target.outputs.result).name}}
+          echo ${{fromJson(steps.find-target.outputs.result).id}}
 
       # Get API access token and verify it.
       - name: Obtaino JWT Token
@@ -300,7 +302,7 @@ jobs:
           -d '{ "distributionId": "${{ env.DISTRIBUTION }}", "strategy" : "rollingupdate" }'
         env:
           DISTRIBUTION: ${{steps.distribution.outputs.id}}
-          ENVIRONMENT: ${{ fromJson(steps.find-target.outputs.result).id }}
+          ENVIRONMENT: ${{fromJson(steps.find-target.outputs.result).id}}
 
       - name: Slack message (failed to deploy)
         if: ${{ failure() }}
