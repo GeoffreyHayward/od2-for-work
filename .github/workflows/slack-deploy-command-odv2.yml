@@ -289,7 +289,7 @@ jobs:
         uses: muinmomin/webhook-action@v1.0.0
         with:
           url: ${{ env.SLACK_WEBHOOK }}
-          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "Requesting a deployment on RunDeck going to ${{steps.find-target.outputs.result}}", "color": "#78BE20" }] }'
+          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "Requesting a deployment on BR ODv2 going to ${{steps.find-target.outputs.result.name}}", "color": "#78BE20" }] }'
 
       - name: Request Deployment
         run: |
@@ -343,7 +343,7 @@ jobs:
         uses: muinmomin/webhook-action@v1.0.0
         with:
           url: ${{ env.SLACK_WEBHOOK }}
-          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "RunDeck is deploying. <@${{ env.USER_ID }}> You can track progress here ${{steps.pipeline-deploy.outputs.PIPELINE_DEPLOY_URL}}", "color": "#78BE20" }] }'
+          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "BR ODv2 is deploying. <@${{ env.USER_ID }}> You can track progress here ${{steps.pipeline-deploy.outputs.PIPELINE_DEPLOY_URL}}", "color": "#78BE20" }] }'
 
 
       - name: Slack message (failed end message)

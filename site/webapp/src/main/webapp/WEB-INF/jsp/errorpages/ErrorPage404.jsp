@@ -8,7 +8,7 @@
   <title>404 error</title>
 </head>
 <body>
-<h2>Welcome to Bloomreach Dude</h2>
+<h2>Welcome to Bloomreach Dude and that</h2>
 <p>
   It appears that you just created an empty Bloomreach project from the archetype. There is nothing to show on the site yet.
   We recommend you use the
