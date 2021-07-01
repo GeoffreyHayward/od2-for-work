@@ -283,7 +283,7 @@ jobs:
 
 
       #
-      # Request deployment from RunDeck
+      # Request deployment from ODv2
       #
       - name: Slack message (requesting deployment)
         uses: muinmomin/webhook-action@v1.0.0
@@ -300,14 +300,14 @@ jobs:
           -d '{ "distributionId": "${{ env.DISTRIBUTION }}", "strategy" : "rollingupdate" }'
         env:
           DISTRIBUTION: ${{steps.distribution.outputs.id}}
-          ENVIRONMENT: ${{steps.find-target.outputs.result.id}}
+          ENVIRONMENT: ${{ fromJson(steps.find-target.outputs.result).id }}
 
       - name: Slack message (failed to deploy)
         if: ${{ failure() }}
         uses: muinmomin/webhook-action@v1.0.0
         with:
           url: ${{ env.SLACK_WEBHOOK }}
-          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "RunDeck failed to start a deployment",  "color": "#DA291C" }] }'
+          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "BR ODv2 failed to start a deployment",  "color": "#DA291C" }] }'
 
 
       # Clean-up steps below.
