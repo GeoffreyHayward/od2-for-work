@@ -1,7 +1,8 @@
 name: Upload and Deploy to OD2
-push:
-  branches:
-    - non
+on:
+  push:
+    branches:
+      - non
 
 # https://dgtltransformation.slack.com/archives/C026PH4GQSH
 
