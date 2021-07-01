@@ -150,12 +150,22 @@ jobs:
           url: ${{ env.SLACK_WEBHOOK }}
           data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "Failed to build the branch named ${{ env.BRANCH }}",  "color": "#DA291C" }] }'
 
+      #
+      # Todo: success slack message that gives a link to the GitHub action for downloading the build for debugging.
+      #
 
   upload:
     name: Upload Build to BR Cloud ODv2
     needs:
       - build
     runs-on: ubuntu-latest
+    env:
+      PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
+      BRANCH: ${{ github.event.client_payload.data.text }}
+      CHANNEL_ID: ${{ github.event.client_payload.data.channel_id }}
+      SLACK_WEBHOOK: ${{  secrets.SLACK_WEBHOOK }}
+      USER_ID: ${{  github.event.client_payload.data.user_id }}
+
     steps:
 
       #
