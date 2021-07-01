@@ -1,5 +1,5 @@
 name: Upload and Deploy to OD2
-on: []
+on: [ ]
 
 # https://dgtltransformation.slack.com/archives/C026PH4GQSH
 
@@ -171,7 +171,7 @@ jobs:
           -o /dev/null -w '%{http_code}\n' -s)
           echo "::set-output name=code::$code"
         env:
-          REFRESH:  ${{ steps.jwt_token.outputs.refresh }}
+          REFRESH: ${{ steps.jwt_token.outputs.refresh }}
       - name: Check Response Code from Deletion of JWT Refresh Access tokens
         if: ${{ steps.jwt_token_invalidate.outputs.code != 200 }}
         uses: actions/github-script@v3
