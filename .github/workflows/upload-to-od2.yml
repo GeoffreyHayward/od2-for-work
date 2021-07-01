@@ -1,6 +1,8 @@
 name: Upload and Deploy to OD2
 on: [push]
 
+# https://dgtltransformation.slack.com/archives/C026PH4GQSH
+
 jobs:
   build:
     name: Build Project
