@@ -187,7 +187,7 @@ jobs:
         uses: actions/github-script@v4.0.2
         id: find-target
         with:
-          result-encoding: string
+          result-encoding: json
           script: |
             const environments = {
               C026PH4GQSH: {
