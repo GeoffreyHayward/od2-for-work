@@ -9,8 +9,6 @@ jobs:
 
   list_environments:
     name: Ask API for details of environments
-    needs:
-      - integrity
     runs-on: ubuntu-latest
 
     steps:
