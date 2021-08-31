@@ -58,14 +58,3 @@ jobs:
 
       - name: print files object
         run: echo ${{steps.files.outputs.details}}
-
-
-      # End
-      - name: Slack message (failed end message)
-        if: ${{ always() }}
-        uses: muinmomin/webhook-action@v1.0.0
-        env:
-          GITHUB_WORKFLOW_URL: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        with:
-          url: ${{ env.SLACK_WEBHOOK }}
-          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Finished", "attachments": [{ "text" : "End of communication. The logs are here ${{ env.GITHUB_WORKFLOW_URL }}",  "color": "#005EB8" }] }'
