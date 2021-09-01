@@ -54,7 +54,6 @@ jobs:
           -X GET https://api.${{ secrets.HOST }}/v3/appconfigfiles)
           echo "::set-output name=details::${response//'"'/'\"'}"
 
-      # ${{steps.files.outputs.details}}
-
       - name: print files object
-        run: echo ${{steps.files.outputs.details}}
+        run: echo '${{steps.files.outputs.details}}' | jq '.[] | select(.name | startswith("hippo"))'
+
