@@ -3,7 +3,7 @@ name: Slack Deployment Command for ODv2
 on:
   repository_dispatch:
     types:
-      - slack-deploy-command
+      - slack-deploy-command-odv2
 
 jobs:
 
@@ -37,6 +37,20 @@ jobs:
                   core.setFailed("The origin integrity check failed.")
                 }
             }
+
+      #
+      # Provide a URL to the active GitHub Actions Workflow run
+      #
+      - name: Slack message (Track progress message)
+        if: ${{ success() }}
+        uses: muinmomin/webhook-action@v1.0.0
+        with:
+          url: ${{ env.SLACK_WEBHOOK }}
+          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "The pipeline logs are here ${{ env.GITHUB_WORKFLOW_URL }}",  "color": "#005EB8" }] }'
+        env:
+          SLACK_WEBHOOK: ${{  secrets.SLACK_WEBHOOK }}
+          GITHUB_WORKFLOW_URL: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          CHANNEL_ID: ${{ github.event.client_payload.data.channel_id }}
 
 
   build:
@@ -122,26 +136,11 @@ jobs:
             ${{ runner.os }}-node-nhs-digital-
             ${{ runner.os }}-node-nhs-
 
-
-      # todo version bump (main project)
-
-
       - name: Build and Package Branch
-        run: |
-          mvn verify --global-settings ".mvn.settings.xml"
-          mvn -P dist
+        run: make clean build-odv2
         env:
           HIPPO_MAVEN_PASSWORD: ${{ secrets.HIPPO_MAVEN_PASSWORD }}
           HIPPO_MAVEN_USERNAME: ${{ secrets.HIPPO_MAVEN_USERNAME }}
-
-      #
-      # upload build for next job
-      #
-      - name: Archive dist artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: build
-          path: target/*.tar.gz
 
       - name: Slack message (failed to build the branch)
         if: ${{ failure() }}
@@ -149,6 +148,24 @@ jobs:
         with:
           url: ${{ env.SLACK_WEBHOOK }}
           data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "Failed to build the branch named ${{ env.BRANCH }}",  "color": "#DA291C" }] }'
+
+
+      #
+      # upload build for next job
+      #
+      - name: Store Artifact for Later in the Pipeline
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: target/*.tar.gz
+          if-no-files-found: error
+
+      - name: Slack message (failed to store artifact for later in the pipeline)
+        if: ${{ failure() }}
+        uses: muinmomin/webhook-action@v1.0.0
+        with:
+          url: ${{ env.SLACK_WEBHOOK }}
+          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "The pipeline failed to loacate the built artifact",  "color": "#DA291C" }] }'
 
       #
       # Todo: success slack message that gives a link to the GitHub action for downloading the build for debugging.
@@ -192,7 +209,11 @@ jobs:
             const environments = {
               C026PH4GQSH: {
                 "name": "development",
-                "id": "246914a9-a6cd-4948-b811-e7f5591b7fac"
+                "id": "c033120b-291a-463c-8ba7-363fb50ea072",
+                "properties": {
+                  "aws": "8813e0d3-ed9d-4580-9018-bda4526b8858",
+                  "jvm": "bce66142-e4ae-4f46-8cbe-f6cba58d340e"
+                }
               }
             }
             if(environments[`${process.env.CHANNEL_ID}`] === undefined) {
@@ -219,14 +240,13 @@ jobs:
         run: |
           response=$(curl -i \
           -H "Accept: application/json; charset=utf-8" \
-          -X POST https://api.nhsdigital.bloomreach.cloud/v3/authn/access_token \
+          -X POST https://api.${{ secrets.HOST }}/v3/authn/access_token \
           -d '{ "username": "${{ env.USERNAME }}", "password": "${{ env.PASSWORD }}" }')
           token=$(echo $response | awk 'match($0, /access_token":"[^"]+"/) {print substr($0, RSTART+15)}' | cut -d '"' -f 1 )
           refresh=$(echo $response | awk 'match($0, /refresh_token":"[^"]+"/) {print substr($0, RSTART+16)}' | cut -d '"' -f 1 )
           echo "::set-output name=token::$token"
           echo "::set-output name=refresh::$refresh"
         env:
-          API: ${{ secrets.MISSION_CONTROL_API_ADDRESS }}
           USERNAME: ${{ secrets.MISSION_CONTROL_API_USERNAME }}
           PASSWORD: ${{ secrets.MISSION_CONTROL_API_PASSWORD }}
       - name: Verify JWT Token
@@ -235,7 +255,7 @@ jobs:
           code=$(curl -L \
           -H "Accept: application/json; charset=utf-8" \
           -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
-          -X GET https://api.nhsdigital.bloomreach.cloud/v3/authn/verify_token \
+          -X GET https://api.${{ secrets.HOST }}/v3/authn/verify_token \
           -o /dev/null -w '%{http_code}\n' -s)
           echo "::set-output name=code::$code"
       - name: Check Response Code from Verify JWT Token
@@ -269,7 +289,7 @@ jobs:
           file="dist_file=@build/${filelist[0]}"
           response=$(curl -i \
           -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
-          -X POST https://api.nhsdigital.bloomreach.cloud/v3/distributions \
+          -X POST https://api.${{ secrets.HOST }}/v3/distributions \
           -F $file)
           id=$(echo $response | awk 'match($0, /id":"[^"]+"/) {print substr($0, RSTART+5)}' | cut -d '"' -f 1 )
           echo "::set-output name=id::$id"
@@ -282,6 +302,24 @@ jobs:
         with:
           url: ${{ env.SLACK_WEBHOOK }}
           data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "Failed to upload the build",  "color": "#DA291C" }] }'
+
+
+      #
+      # Prepare App Config Deployment Details
+      #
+      - name: Get Configuration Files Details
+        id: files
+        run: |
+          response=$(curl \
+          -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
+          -X GET https://api.${{ secrets.HOST }}/v3/appconfigfiles)
+          echo "::set-output name=details::${response}"
+
+      - name: Get Lastest IP Configuration File ID
+        id: latest-ip-whitelist
+        run: |
+          id=$(echo '${{steps.files.outputs.details}}' | sed -e 's/+00:00/Z/g' | jq ' . | map( select( .name | startswith( "hippo-ipfilter-" ) ) ) | sort_by( .createdAt | fromdate ) | reverse | .[0].id')
+          echo "::set-output name=id::${id}"
 
 
       #
@@ -298,11 +336,13 @@ jobs:
           curl -i \
           -H "Accept: application/json; charset=utf-8" \
           -H "Authorization: Bearer ${{ steps.jwt_token.outputs.token }}" \
-          -X PUT https://api.nhsdigital.bloomreach.cloud/v3/environments/${{ env.ENVIRONMENT }}/deploy \
-          -d '{ "distributionId": "${{ env.DISTRIBUTION }}", "strategy" : "rollingupdate" }'
+          -X PUT https://api.${{ secrets.HOST }}/v3/environments/${{ env.ENVIRONMENT }}/deploy \
+          -d '{ "distributionId": "${{ env.DISTRIBUTION }}", "strategy" : "rollingupdate", "appConfigFileRoles": [ { "appConfigFileId": "${{ env.AWS }}", "role": "file", "newFilename": "aws-credentials.properties" }, { "appConfigFileId": "${{ env.JVM }}", "role": "systemproperty" }, { "appConfigFileId": "${{ steps.latest-ip-whitelist.outputs.id }}", "role": "systemproperty" } ] }'
         env:
-          DISTRIBUTION: ${{steps.distribution.outputs.id}}
-          ENVIRONMENT: ${{fromJson(steps.find-target.outputs.result).id}}
+          DISTRIBUTION: ${{ steps.distribution.outputs.id }}
+          ENVIRONMENT: ${{ fromJson(steps.find-target.outputs.result).id }}
+          AWS: ${{ fromJson(steps.find-target.outputs.result).properties.aws }}
+          JVM: ${{ fromJson(steps.find-target.outputs.result).properties.jvm }}
 
       - name: Slack message (failed to deploy)
         if: ${{ failure() }}
@@ -321,7 +361,7 @@ jobs:
         run: |
           code=$(curl -L \
           -H "Accept: application/json; charset=utf-8" \
-          -X DELETE https://api.nhsdigital.bloomreach.cloud/v3/authn/refresh_token \
+          -X DELETE https://api.${{ secrets.HOST }}/v3/authn/refresh_token \
           -d '{ "grant_type": "refresh_token", "refresh_token": "${{ env.REFRESH }}" }' \
           -o /dev/null -w '%{http_code}\n' -s)
           echo "::set-output name=code::$code"
@@ -345,15 +385,12 @@ jobs:
         uses: muinmomin/webhook-action@v1.0.0
         with:
           url: ${{ env.SLACK_WEBHOOK }}
-          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "BR ODv2 is deploying. <@${{ env.USER_ID }}> You can track progress here ${{steps.pipeline-deploy.outputs.PIPELINE_DEPLOY_URL}}", "color": "#78BE20" }] }'
+          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline progress...", "attachments": [{ "text" : "BR ODv2 is deploying. <@${{ env.USER_ID }}> You can track progress here https://missioncontrol.${{ secrets.HOST }}/#/environment/${{ fromJson(steps.find-target.outputs.result).id }}/details", "color": "#78BE20" }] }'
 
 
-      - name: Slack message (failed end message)
+      - name: Slack message (Always end message)
         if: ${{ always() }}
         uses: muinmomin/webhook-action@v1.0.0
-        env:
-          GITHUB_WORKFLOW_URL: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         with:
           url: ${{ env.SLACK_WEBHOOK }}
-          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline Finished", "attachments": [{ "text" : "End of communication. The logs are here ${{ env.GITHUB_WORKFLOW_URL }}",  "color": "#005EB8" }] }'
-
+          data: '{ "channel": "${{ env.CHANNEL_ID }}", "text": "Pipeline Finished", "attachments": [{ "text" : "End of communication. You have a great day now.",  "color": "#005EB8" }] }'
