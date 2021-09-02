@@ -55,5 +55,8 @@ jobs:
           echo "::set-output name=details::${response}"
 
       - name: print files object
-        run: echo '${{steps.files.outputs.details}}' | jq '.[] | select(.name | startswith("hippo"))'
+        run: |
+          echo '${{steps.files.outputs.details}}' | sed -e 's/+00:00/Z/g' | jq ' . | map( select( .name | startswith( "hippo-ipfilter-" ) ) ) | sort_by( .createdAt | fromdate ) | reverse | .[1].id '
+          echo '${{steps.files.outputs.details}}' | sed -e 's/+00:00/Z/g' | jq ' . | map( select( .name | startswith( "hippo-ipfilter-" ) ) ) | sort_by( .createdAt | fromdate ) | reverse | .[1].name '
+
 
