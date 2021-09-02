@@ -56,7 +56,8 @@ jobs:
 
       - name: print files object
         run: |
-          echo '${{steps.files.outputs.details}}' | sed -e 's/+00:00/Z/g' | jq ' . | map( select( .name | startswith( "hippo-ipfilter-" ) ) ) | sort_by( .createdAt | fromdate ) | .[1].id '
-          echo '${{steps.files.outputs.details}}' | sed -e 's/+00:00/Z/g' | jq ' . | map( select( .name | startswith( "hippo-ipfilter-" ) ) ) | sort_by( .createdAt | fromdate ) | .[1].name '
+          echo '${{steps.files.outputs.details}}' | sed -e 's/+00:00/Z/g' | jq ' . | map( select( .name | startswith( "hippo-ipfilter-" ) ) ) | sort_by( .createdAt | fromdate ) | reverse '
+          echo '${{steps.files.outputs.details}}' | sed -e 's/+00:00/Z/g' | jq ' . | map( select( .name | startswith( "hippo-ipfilter-" ) ) ) | sort_by( .createdAt | fromdate ) | reverse | .[1].id '
+          echo '${{steps.files.outputs.details}}' | sed -e 's/+00:00/Z/g' | jq ' . | map( select( .name | startswith( "hippo-ipfilter-" ) ) ) | sort_by( .createdAt | fromdate ) | reverse | .[1].name '
 
 
